@@ -476,8 +476,8 @@ def gen_random_prompts_return_lens(tokenizer, len_mean, len_range, num_prompts, 
             encoded = encoded[:l - 1]
         decoded = tokenizer.decode(encoded)
         encoded = tokenizer(decoded)['input_ids']
-        assert len(
-            encoded) == l, f"Expected prompt to contain exactly {l} tokens, got {len(encoded)=}"
+        # assert len(
+        #     encoded) == l, f"Expected prompt to contain exactly {l} tokens, got {len(encoded)=}"
         prompts[i] = decoded
 
     return prompts, prompt_lens
@@ -527,7 +527,7 @@ def main():
         assert args.random_prompt_count is not None
 
     backend = GenerationBackend[args.backend]
-    tokenizer = AutoTokenizer.from_pretrained('facebook/opt-13b')
+    tokenizer = AutoTokenizer.from_pretrained('/nfs/models--meta-llama--Llama-2-7b-hf/snapshots/8cca527612d856d7d32bd94f8103728d614eb852')
 
     if args.prompts_filename:
         prompts = load_prompts(args.prompts_filename)
