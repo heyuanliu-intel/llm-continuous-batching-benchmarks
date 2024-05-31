@@ -505,6 +505,7 @@ def main():
                         help="Whether or not to fail the benchmarking script if any request fails")
 
     parser.add_argument('--variable_response_lens_mean', type=int)
+    parser.add_argument('--model_path', type=str)
     parser.add_argument('--variable_response_lens_range', type=int)
     parser.add_argument('--variable_response_lens_distribution', choices=[
                         "uniform", "exponential", "capped_exponential"], default="uniform")
@@ -527,7 +528,8 @@ def main():
         assert args.random_prompt_count is not None
 
     backend = GenerationBackend[args.backend]
-    tokenizer = AutoTokenizer.from_pretrained('/nfs/models--meta-llama--Llama-2-7b-hf/snapshots/8cca527612d856d7d32bd94f8103728d614eb852')
+    # tokenizer = AutoTokenizer.from_pretrained('/nfs/models--meta-llama--Llama-2-7b-hf/snapshots/8cca527612d856d7d32bd94f8103728d614eb852')
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path)
 
     if args.prompts_filename:
         prompts = load_prompts(args.prompts_filename)
