@@ -16,6 +16,9 @@ import sys
 import time
 import numpy as np
 
+np.random.seed(10)
+# Define the maximum number of concurrent tasks
+max_num_threads = 32
 
 def get_wait_time(mean_time_between_requests: float, distribution: str) -> float:
     if distribution == "uniform":
@@ -385,7 +388,7 @@ async def benchmark(
         query_model = query_model_ft
     else:
         raise ValueError(f'unknown backend {backend}')
-
+    semaphore = asyncio.Semaphore(max_num_threads)
     m = MeasureLatency()
 
     query_model = m.measure(query_model)
@@ -398,6 +401,10 @@ async def benchmark(
     print(f'traffic distribution={distribution}, qps={qps}')
 
     total_requests = len(prompts)
+    
+    async def query_model_with_semaphore(prompt, verbose, tokenizer, allow_variable_generation_length, total_requests, port):
+        async with semaphore:
+            return await query_model(prompt, verbose, tokenizer, allow_variable_generation_length, total_requests, port)
 
     async_prompts = async_request_gen(
         iter(prompts), qps=qps, distribution=distribution)
@@ -405,6 +412,7 @@ async def benchmark(
     start_time = time.time()
     tasks = []
     async for prompt in async_prompts:
+        # tasks.append(asyncio.create_task(query_model_with_semaphore(
         tasks.append(asyncio.create_task(query_model(
             prompt, verbose, tokenizer, allow_variable_generation_length, total_requests, port)))
     queries = await asyncio.gather(*tasks)
@@ -448,6 +456,41 @@ def gen_random_prompts(tokenizer, len_mean, len_range, num_prompts, vocab_ids_to
         tokenizer, len_mean, len_range, num_prompts, vocab_ids_to_exclude)
     return prompts
 
+# def gen_random_prompts_return_lens(tokenizer, len_mean, len_range, num_prompts, vocab_ids_to_exclude=[]):
+#     low = len_mean - (len_range // 2)
+#     high = len_mean + (len_range // 2)
+#     vocab_ids = list(set(tokenizer.get_vocab().values()) - set(vocab_ids_to_exclude))
+
+#     def gen_prompt_ids(length):
+#         return [random.choice(vocab_ids) for _ in range(length)]
+
+#     prompt_lens = [random.randint(low, high) for _ in range(num_prompts)]
+#     prompts_as_ids = [gen_prompt_ids(prompt_len) for prompt_len in prompt_lens]
+#     prompts = [tokenizer.decode(prompt_ids) for prompt_ids in prompts_as_ids]
+
+#     for i, (p, l) in enumerate(zip(prompts, prompt_lens)):
+#         encoded = tokenizer(p)['input_ids']
+#         if len(encoded) > l:
+#             encoded = encoded[:l-1]
+        
+#         elif len(encoded) < l:
+#             encoded += [tokenizer.pad_token_id] * (l - len(encoded))
+
+#         decoded = tokenizer.decode(encoded)
+#         encoded = tokenizer(decoded)['input_ids']
+
+#         if len(encoded) != l:
+#             print(f"Debug info for prompt {i}:")
+#             print(f"Original prompt: {p}")
+#             print(f"Original encoded length: {len(tokenizer(p)['input_ids'])}")
+#             print(f"Adjusted prompt: {decoded}")
+#             print(f"Adjusted encoded length: {len(encoded)}")
+#             print(f"Expected length: {l}")
+
+#         assert len(encoded) == l, f"Expected prompt to contain exactly {l} tokens, got {len(encoded)=}"
+#         prompts[i] = decoded
+
+#     return prompts, prompt_lens
 
 def gen_random_prompts_return_lens(tokenizer, len_mean, len_range, num_prompts, vocab_ids_to_exclude=[]):
 
@@ -528,7 +571,6 @@ def main():
         assert args.random_prompt_count is not None
 
     backend = GenerationBackend[args.backend]
-    # tokenizer = AutoTokenizer.from_pretrained('/nfs/models--meta-llama--Llama-2-7b-hf/snapshots/8cca527612d856d7d32bd94f8103728d614eb852')
     tokenizer = AutoTokenizer.from_pretrained(args.model_path)
 
     if args.prompts_filename:
