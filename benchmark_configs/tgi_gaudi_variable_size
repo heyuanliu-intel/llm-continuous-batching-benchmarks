@@ -1,24 +1,33 @@
 #!/usr/bin/env bash
 # set -ex
 
-export PORT=1027
+export PORT=80
 
-# ranges=("32" "128" "512" "1536")
+ranges=("32")
 # max_batch_total_tokens_vals=("8700" "7500" "8100" "8100")
-ranges=("1024")
-max_batch_total_tokens_vals=("36864")
-model_name_dir=/nfs/models--meta-llama--Llama-2-7b-hf/snapshots/8cca527612d856d7d32bd94f8103728d614eb852
+
+random_prompt_lens_mean=$1
+response_len=$2
+response_range=$3
+bs=$4
+max_batch_total_tokens=$(( (random_prompt_lens_mean + response_len) * bs ))
+echo ${max_batch_total_tokens}
+
+model_name_dir=/home/baihuiji/llama2-7b
 results_home=$PWD/result
 mkdir -p ${results_home}
-
+max_input=$random_prompt_lens_mean
+max_total=$(( random_prompt_lens_mean + response_len ))
 function start_model_server {
     local max_batch_total_tokens=$1
 
     model_name=$model_name_dir \
     max_batch_total_tokens=$max_batch_total_tokens \
     PORT=$PORT \
+    max_input=$max_input \
+    max_total=$max_total \
     ../launch_scripts/launch_tgi_gaudi \
-    >> tgi_log 2>&1 &
+     &
     
     while [ "$(curl -s http://localhost:${PORT}/info | grep $model_name_dir | wc -l)" -eq 0 ]; do
         echo 'Waiting for server to be ready'
@@ -90,8 +99,7 @@ trap kill_model_server EXIT
 
 # Run real test
 for i in ${!ranges[@]}; do
-    range=${ranges[$i]}
-    max_batch_total_tokens=${max_batch_total_tokens_vals[$i]}
+    range=${response_range}
     
     echo "range $range max_batch_total_tokens $max_batch_total_tokens"
 
@@ -101,12 +109,12 @@ for i in ${!ranges[@]}; do
         ./benchmark_throughput.py \
             --port $PORT \
             --backend HfTextGenerationInference \
-            --random_prompt_lens_mean 128 \
+            --random_prompt_lens_mean ${random_prompt_lens_mean} \
             --random_prompt_lens_range 0 \
-            --random_prompt_count 400 \
+            --random_prompt_count 1000 \
             --gen_random_prompts \
-            --variable_response_lens_mean 512 \
-            --variable_response_lens_range $range \
+            --variable_response_lens_mean ${response_len} \
+            --variable_response_lens_range ${response_range} \
             --variable_response_lens_distribution capped_exponential \
             --allow_variable_generation_length \
             --model_path $model_name_dir \

@@ -16,9 +16,9 @@ import sys
 import time
 import numpy as np
 
-np.random.seed(10)
+np.random.seed(17)
 # Define the maximum number of concurrent tasks
-max_num_threads = 32
+max_num_threads = 8
 
 def get_wait_time(mean_time_between_requests: float, distribution: str) -> float:
     if distribution == "uniform":
@@ -412,8 +412,8 @@ async def benchmark(
     start_time = time.time()
     tasks = []
     async for prompt in async_prompts:
-        # tasks.append(asyncio.create_task(query_model_with_semaphore(
-        tasks.append(asyncio.create_task(query_model(
+        tasks.append(asyncio.create_task(query_model_with_semaphore(
+        # tasks.append(asyncio.create_task(query_model(
             prompt, verbose, tokenizer, allow_variable_generation_length, total_requests, port)))
     queries = await asyncio.gather(*tasks)
     dur_s = time.time() - start_time
