@@ -11,14 +11,23 @@ response_len=$2
 response_range=$3
 bs=$4
 distribution=${5:-"capped_exponential"}
-max_batch_total_tokens=$(( (random_prompt_lens_mean + response_len) * bs ))
+if [ "$distribution" == "uniform" ]; then
+    max_batch_total_tokens=$(( (random_prompt_lens_mean + response_len + response_range) * bs ))
+else
+    max_batch_total_tokens=$(( (random_prompt_lens_mean + response_len) * bs ))
+fi
+
 echo ${max_batch_total_tokens}
 
 model_name_dir=/ssd/hf_models/models--meta-llama--Llama-2-7b-chat-hf/snapshots/f5db02db724555f92da89c216ac04704f23d4590/
 results_home=$PWD/result
 mkdir -p ${results_home}
 max_input=$random_prompt_lens_mean
-max_total=$(( random_prompt_lens_mean + response_len ))
+if [ "$distribution" == "uniform" ]; then
+    max_total=$(( random_prompt_lens_mean + response_len + response_range))
+else
+    max_total=$(( random_prompt_lens_mean + response_len))
+fi
 function start_model_server {
     local max_batch_total_tokens=$1
 
@@ -28,7 +37,7 @@ function start_model_server {
     max_input=$max_input \
     max_total=$max_total \
     ../launch_scripts/launch_tgi_gaudi \
-    2>&1 >> tgi_log_${random_prompt_lens_mean}_{response_len} &
+ &
     
     while [ "$(curl -s http://localhost:${PORT}/info | grep $model_name_dir | wc -l)" -eq 0 ]; do
         echo 'Waiting for server to be ready'
