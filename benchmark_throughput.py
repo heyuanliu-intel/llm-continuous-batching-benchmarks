@@ -599,9 +599,9 @@ def main():
 
     for i, (prompt_len, gen_len) in enumerate(zip(prompt_lens, response_lens)):
         total = prompt_len + gen_len
-        if total > 2048:
-            print(f'truncating long prompt+gen_len {prompt_len=} {gen_len=}')
-            gen_len = 2048 - prompt_len
+        # if total > 2048:
+        #     print(f'truncating long prompt+gen_len {prompt_len=} {gen_len=}')
+        #     gen_len = 2048 - prompt_len
         response_lens[i] = gen_len
 
     if args.print_generation_lens_and_exit:
