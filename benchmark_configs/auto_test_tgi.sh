@@ -8,12 +8,12 @@
 # in800-1024, out300-500
 
 input_mean_arr=(128 512 1824 912)
-input_range_arr=(4 0 448 224)
-output_mean_arr=(768 128 400 400)
-output_range_arr=(1024 256 500 500)
+input_range_arr=(0 0 448 224)
+output_mean_arr=(768 256 400 400)
+output_range_arr=(512 256 200 200)
 bs_arr=(16 32 64 128)
 
-dist_arr=("capped_exponential" "uniform" "capped_exponential" "capped_exponential")
+dist_arr=("uniform" "capped_exponential" "uniform" "uniform")
 
 for bs in "${bs_arr[@]}"
 do

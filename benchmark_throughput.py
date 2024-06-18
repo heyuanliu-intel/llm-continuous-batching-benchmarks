@@ -307,12 +307,13 @@ def calculate_throughput(queries, dur_s, backend, tokenizer, median_token_latenc
     # print(f'prompt_token_count {prompt_token_count} response_token_count {response_token_count}')
 
     throughput_tok_s = (prompt_token_count + response_token_count) / dur_s
+    ete_throughput = (response_token_count) / dur_s
     # print(f'throughput_tok_s {throughput_tok_s:.02f}')
     decode_tkn_s = response_token_count / dur_s
     qps = len(responses) / dur_s
 
     with open(results_filename, 'a') as f:
-        msg = f'backend {backend} dur_s {dur_s:.02f} tokens_per_s {throughput_tok_s:.02f} decode_tkn_s {decode_tkn_s:.02f} qps {qps:.02f} successful_responses {len(responses)} prompt_token_count {prompt_token_count} response_token_count {response_token_count}, {median_token_latency=}, {median_e2e_latency=}'
+        msg = f'backend {backend} dur_s {dur_s:.02f} tokens_per_s {throughput_tok_s:.02f} ete_throughput {ete_throughput:.02f} decode_tkn_s {decode_tkn_s:.02f} qps {qps:.02f} successful_responses {len(responses)} prompt_token_count {prompt_token_count} response_token_count {response_token_count}, {median_token_latency=}, {median_e2e_latency=}'
         if log_latencies:
             msg += f' {all_e2e_latencies=} {all_per_token_latencies=}'
         print(msg, file=f)
