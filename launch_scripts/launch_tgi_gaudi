@@ -54,7 +54,7 @@ text-generation-launcher \
     --max-total-tokens ${max_total} \
     --max-batch-total-tokens ${max_batch_total_tokens} \
     --max-waiting-tokens 20 \
-    --max-batch-prefill-tokens 2048 \
+    --max-batch-prefill-tokens 128 \
     --waiting-served-ratio 1.2 \
     --port 80 \
     --shard-uds-path /tmp/text-generation-server.2 \
