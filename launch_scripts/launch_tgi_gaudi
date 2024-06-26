@@ -45,7 +45,7 @@ else
     echo "shard_flag is $shard_flag"
 fi
 
-TEXT_GENERATION_SERVER_IGNORE_EOS_TOKEN=true \
+TRUST_REMOTE_CODE=true TEXT_GENERATION_SERVER_IGNORE_EOS_TOKEN=true \
 text-generation-launcher \
     --model-id $model_name \
     --sharded $shard_flag  \

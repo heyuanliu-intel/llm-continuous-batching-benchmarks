@@ -20,15 +20,24 @@
 # bs_arr=(16 32 64 128)
 
 # llama2-70b
-model_name_dir=/models/llama2-70b-chat
-num_shard=8
-input_mean_arr=(384 128 912)
-input_range_arr=(256 0 224)
-output_mean_arr=(384 912 128)
-output_range_arr=(256 224 0)
-dist_arr=("uniform" "uniform" "uniform")
-# data_type=bfloat16
-bs_arr=(16 32 64 128)
+# model_name_dir=/models/llama2-70b-chat
+# num_shard=8
+# input_mean_arr=(384 128 912)
+# input_range_arr=(256 0 224)
+# output_mean_arr=(384 912 128)
+# output_range_arr=(256 224 0)
+# dist_arr=("uniform" "uniform" "uniform")
+# # data_type=bfloat16
+# bs_arr=(16 32 64 128)
+
+# Baichuan2 13B
+model_name_dir=/data/aicse.huggingface.model.references-1.11.1/Baichuan2/fine-tune/baichuan2-13b-chat
+input_mean_arr=(128)
+input_range_arr=(0)
+output_mean_arr=(128)
+output_range_arr=(0)
+bs_arr=(2)
+dist_arr=("uniform")
 
 # single case
 # input_mean_arr=(912)
