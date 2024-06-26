@@ -32,6 +32,7 @@
 
 # Baichuan2 13B
 model_name_dir=/data/aicse.huggingface.model.references-1.11.1/Baichuan2/fine-tune/baichuan2-13b-chat
+num_shard=1
 input_mean_arr=(128)
 input_range_arr=(0)
 output_mean_arr=(128)
